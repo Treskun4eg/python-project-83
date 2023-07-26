@@ -25,3 +25,4 @@ reinstal:
 
 dev:
 	poetry run flask --app page_analyzer:app run
+.PHONI: install build publish reinstall selfcheck check
