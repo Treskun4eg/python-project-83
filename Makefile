@@ -5,7 +5,7 @@ build:
 	poetry build
 
 test-coverage:
-	poetry run pytest --cov=gendiff tests/ --cov-report xml
+	poetry run pytest --cov=page_analyzer tests/ --cov-report xml
 
 publish:
 	poetry publish --dry-run
@@ -14,7 +14,7 @@ package-install:
 	python3 -m pip install --user dist/*.whl
 
 make lint:
-	poetry run flake8 gendiff
+	poetry run flake8 page_analyzer
 
 selfcheck:
 	poetry check
