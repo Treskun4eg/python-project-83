@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<h2>Сайты</h2>
+<div class="table-responsive">
+    <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Последняя проверка</th>
+                <th>Код ответа</th>
+            </tr>
+        </thead>
+    {% for row in records %}
+        <tbody>
+            <tr>
+                <td>{{ row[0] }}</td>
+                <td>
+                    <a href="#">{{ row[1] }}</a>
+                </td>
+                <td></td>
+                <td></td>
+            </tr>
+        </tbody>
+    {% endfor %}
+    </table>
+</div>
+{% endblock %}
