@@ -53,7 +53,8 @@ def index():
 def get_urls():
     with connect.cursor() as cursor:
         try:
-            cursor.execute("""SELECT * FROM urls ORDER BY created_at DESC, id DESC;""")
+            cursor.execute("""SELECT * FROM urls
+                            ORDER BY created_at DESC, id DESC;""")
             records = cursor.fetchall()
         except Exception as err:
             print(err)
@@ -100,7 +101,8 @@ def add_url():
 @app.get('/urls/<int:id>')
 def get_url_id(id):
     with connect.cursor() as cursor:
-        cursor.execute("""SELECT id, name, created_at FROM urls WHERE id = %s;""",
+        cursor.execute("""SELECT id, name, created_at
+                        FROM urls WHERE id = %s;""",
                        (id,))
         record = cursor.fetchone()
     messages = get_flashed_messages(with_categories=True)
