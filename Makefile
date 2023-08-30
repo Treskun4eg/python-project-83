@@ -5,7 +5,7 @@ build:
 	poetry build
 
 build_sh:
-	build.sh
+	./build.sh
 
 test-coverage:
 	poetry run pytest --cov=page_analyzer tests/ --cov-report xml
