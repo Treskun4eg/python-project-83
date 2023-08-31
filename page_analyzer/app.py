@@ -12,8 +12,10 @@ import psycopg2
 from urllib.parse import urlparse
 from datetime import date
 import validators
+from dotenv import load_dotenv
 
 
+load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
