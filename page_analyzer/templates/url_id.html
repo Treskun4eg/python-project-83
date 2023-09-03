@@ -3,7 +3,11 @@
 {% block div %}
     {% if messages %}
         {% for category, message in messages %}
-        <div class="alert alert-success {{ category }}" role="alert">{{ message }}</div>
+            {% if category == 'Успех' %}
+                <div class="alert alert-success {{ category }}" role="alert">{{ message }}</div>
+            {% else %}
+                <div class="alert alert-info {{ category }}" role="alert">{{ message }}</div>
+            {% endif %}
         {% endfor %}
     {% endif %}
 {% endblock %}

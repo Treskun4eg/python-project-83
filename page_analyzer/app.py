@@ -85,19 +85,20 @@ def add_url():
                 VALUES (%s, %s);""",
                 (normalized_url, data_today)
             )
-            record = cursor.fetchone()
-            print(record)
-            flash('Страница успешно добавлена', 'Успех')
-            return render_template(url_for('get_url_id'), record=record)
-
-        except Exception as err:
-            cursor.execute("""SELECT id FROM urls WHERE name = %s;""",
+            cursor.execute("""SELECT id
+                            FROM urls WHERE name = %s;""",
                            (normalized_url,))
-            record = cursor.fetchone()
+            id = cursor.fetchone()
+            flash('Страница успешно добавлена', 'Успех')
+            return redirect(url_for('get_url_id', id=id[0]))
+        except psycopg2.Error as err:
+            cursor.execute("""SELECT id
+                            FROM urls WHERE name = %s;""",
+                           (normalized_url,))
+            id = cursor.fetchone()
             flash('Страница уже существует', 'Повторение')
             print(err)
-            print(record)
-            return redirect(url_for('get_url_id', id=record[0]))
+            return redirect(url_for('get_url_id', id=id[0]))
 
 
 @app.get('/urls/<int:id>')
