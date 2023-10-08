@@ -5,6 +5,8 @@
         {% for category, message in messages %}
             {% if category == 'Успех' %}
                 <div class="alert alert-success {{ category }}" role="alert">{{ message }}</div>
+            {% elif category == 'Ошибка' %}
+                <div class="alert alert-danger" role="alert">{{ message }}</div>
             {% else %}
                 <div class="alert alert-info {{ category }}" role="alert">{{ message }}</div>
             {% endif %}
@@ -13,30 +15,30 @@
 {% endblock %}
 
 {% block main %}
-    {% if record %}
+    {% if url_info %}
     <div class="container-lg mt-3">
-        <h2>Сайт: {{ record[1] }}</h2>
+        <h2>Сайт: {{ url_info.name }}</h2>
         <div class="table-responsive">
             <table class="table table-bordered table-hover text-nowrap" data-test="url">
                 <tbody>
                     <tr>
                         <td>ID</td>
-                        <td>{{ record[0] }}</td>
+                        <td>{{ url_info.id }}</td>
                     </tr>
                     <tr>
                         <td>Имя</td>
-                        <td>{{ record[1] }}</td>
+                        <td>{{ url_info.name }}</td>
                     </tr>
                     <tr>
                         <td>Дата создания</td>
-                        <td>{{ record[2] }}</td>
+                        <td>{{ url_info.created_at }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <h2 class="mt-5 mb-3">Проверки</h2>
-        <form method="post" action="/urls/1/checks">
+        <form method="post" action="{{ url_for('check_url', id=url_info.id) }}">
             <input type="submit" class="btn btn-primary" value="Запустить проверку">
         </form>
 
@@ -53,7 +55,18 @@
                     </tr>
                 </thead>
                 <tbody>
-
+                    {% if checks_info %}
+                        {% for check in checks_info %}
+                            <tr>
+                                <td>{{ check.id }}</td>
+                                <td>{{ check.status_code }}</td>
+                                <td>{{ check.h1 }}</td>
+                                <td>{{ check.title }}</td>
+                                <td>{{ check.description }}</td>
+                                <td>{{ check.created_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
                 </tbody>
             </table>
         </div>
