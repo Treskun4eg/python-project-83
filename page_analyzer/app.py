@@ -7,42 +7,25 @@ from flask import (
     url_for,
     get_flashed_messages
 )
+
+from page_analyzer.validator import validation_url
+from page_analyzer import db
+from page_analyzer.get_seo import get_seo
+
 import os
-import psycopg2
-from urllib.parse import urlparse
-from datetime import date
-import validators
 from dotenv import load_dotenv
+from datetime import date
+import psycopg2
+import requests
 
 
 load_dotenv()
 app = Flask(__name__)
+TIMEOUT = int(os.getenv('EXTERNAL_REQUEST_TIMEOUT', 30))
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 connect = psycopg2.connect(DATABASE_URL)
 connect.autocommit = True
-
-
-def extract_domain_and_normalize(data):
-    url = data['url']
-    parse_url = urlparse(url)
-    normalized_url = parse_url.scheme + '://' + parse_url.netloc
-    return normalized_url
-
-
-def validation_url(data):
-    errors = {}
-    url = data['url']
-    get_a_domain = extract_domain_and_normalize(data)
-    url_valid = validators.url(url)
-    if not url_valid and len(get_a_domain) > 255:
-        errors["VarcharERROR1"] = "URL превышает 255 символов"
-    if not url_valid and len(url) == 0:
-        errors["VarcharERROR2"] = "Некорректный URL"
-        errors["VarcharERROR3"] = "URL обязателен"
-    if not url_valid and 255 > len(url) > 0:
-        errors["VarcharERROR2"] = "Некорректный URL"
-    return errors
 
 
 @app.route('/')
@@ -52,61 +35,74 @@ def index():
 
 
 @app.get('/urls')
-def get_urls():
-    with connect.cursor() as cursor:
-        try:
-            cursor.execute("""SELECT * FROM urls
-                            ORDER BY created_at DESC, id DESC;""")
-            records = cursor.fetchall()
-        except Exception as err:
-            print(err)
-    return render_template('urls.html', records=records)
+def list_urls():
+    with connect as conn:
+        urls = db.get_urls(conn)
+        url_checks = {
+            item.url_id: item for item in db.get_last_URL_check(conn)
+        }
+    return render_template('urls.html',
+                           urls=urls,
+                           url_checks=url_checks)
 
 
 @app.post('/urls')
 def add_url():
 
-    data = request.form.to_dict()
-    errors = validation_url(data)
-    data_today = date.today()
+    url_name = request.form.to_dict()
+    errors = validation_url(url_name)
 
     if errors:
         for key, value in errors.items():
             flash(value, key)
         return redirect(url_for('index'))
 
-    normalized_url = extract_domain_and_normalize(data)
-
-    with connect.cursor() as cursor:
-
-        try:
-            cursor.execute(
-                """INSERT INTO urls (name, created_at)
-                VALUES (%s, %s);""",
-                (normalized_url, data_today)
-            )
-            cursor.execute("""SELECT id
-                            FROM urls WHERE name = %s;""",
-                           (normalized_url,))
-            id = cursor.fetchone()
-            flash('Страница успешно добавлена', 'Успех')
-            return redirect(url_for('get_url_id', id=id[0]))
-        except psycopg2.Error as err:
-            cursor.execute("""SELECT id
-                            FROM urls WHERE name = %s;""",
-                           (normalized_url,))
-            id = cursor.fetchone()
+    with connect as conn:
+        url_check = db.get_url_id_by_name(url_name, conn)
+        if url_check:
             flash('Страница уже существует', 'Повторение')
-            print(err)
-            return redirect(url_for('get_url_id', id=id[0]))
+            return redirect(url_for('get_url_id', id=url_check.id))
+        db.created_url(url_name, conn)
+        url_id = db.get_url_id_by_name(url_name, conn)
+        flash('Страница успешно добавлена', 'Успех')
+        return redirect(url_for('get_url_id', id=url_id.id))
 
 
 @app.get('/urls/<int:id>')
 def get_url_id(id):
-    with connect.cursor() as cursor:
-        cursor.execute("""SELECT id, name, created_at
-                        FROM urls WHERE id = %s;""",
-                       (id,))
-        record = cursor.fetchone()
-    messages = get_flashed_messages(with_categories=True)
-    return render_template('url_id.html', record=record, messages=messages)
+    with connect as conn:
+        url_info = db.get_url_by_id(id, conn)
+        checks_info = db.get_url_checks_by_url_id(id, conn)
+        messages = get_flashed_messages(with_categories=True)
+        return render_template('url_id.html',
+                               url_info=url_info,
+                               checks_info=checks_info,
+                               messages=messages)
+
+
+@app.post('/urls/<int:id>/checks')
+def check_url(id):
+    date_today = date.today()
+
+    with connect as conn:
+
+        url_info = db.get_url_by_id(id, conn)
+        try:
+            request = requests.get(url_info.name, timeout=TIMEOUT)
+            request.raise_for_status()
+            status_code = request.status_code
+            h1, title, description = get_seo(request.text)
+            db.created_url_checks(id,
+                                  status_code,
+                                  h1,
+                                  title,
+                                  description,
+                                  date_today,
+                                  conn)
+            flash('Cтраница успешно проверена', 'Успех')
+            return redirect(url_for('get_url_id',
+                                    id=url_info.id))
+        except requests.exceptions.RequestException as err:
+            flash('Произошла ошибка при проверке', 'Ошибка')
+            print(err)
+            return redirect(url_for('get_url_id', id=url_info.id))
