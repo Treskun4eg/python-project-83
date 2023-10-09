@@ -64,10 +64,21 @@ def get_url_checks_by_url_id(url_id, connect):
         return cursor.fetchall()
 
 
-def created_url_checks(url_id, status_code, h1, title, description, date_today, connect):
+def created_url_checks(url_id,
+                       status_code,
+                       h1,
+                       title,
+                       description,
+                       date_today,
+                       connect):
     with connect.cursor(cursor_factory=extras.NamedTupleCursor) as cursor:
         cursor.execute(
-                """INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s);""",
+                """INSERT INTO url_checks (url_id,
+                                            status_code,
+                                            h1,
+                                            title,
+                                            description,
+                                            created_at)
+                   VALUES (%s, %s, %s, %s, %s, %s);""",
                 (url_id, status_code, h1, title, description, date_today)
             )
