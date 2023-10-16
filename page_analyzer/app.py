@@ -90,19 +90,19 @@ def check_url(id):
         try:
             request = requests.get(url_info.name, timeout=TIMEOUT)
             request.raise_for_status()
-            status_code = request.status_code
-            h1, title, description = get_seo(request.text)
-            db.created_url_checks(id,
-                                  status_code,
-                                  h1,
-                                  title,
-                                  description,
-                                  date_today,
-                                  conn)
-            flash('Cтраница успешно проверена', 'Успех')
-            return redirect(url_for('get_url_id',
-                                    id=url_info.id))
         except requests.exceptions.RequestException as err:
             flash('Произошла ошибка при проверке', 'Ошибка')
             print(err)
             return redirect(url_for('get_url_id', id=url_info.id))
+        status_code = request.status_code
+        h1, title, description = get_seo(request.text)
+        db.created_url_checks(id,
+                              status_code,
+                              h1,
+                              title,
+                              description,
+                              date_today,
+                              conn)
+        flash('Страница успешно проверена', 'Успех')
+        return redirect(url_for('get_url_id',
+                                id=url_info.id))
