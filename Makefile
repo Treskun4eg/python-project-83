@@ -7,9 +7,6 @@ build:
 build_sh:
 	./build.sh
 
-test-coverage:
-	poetry run pytest --cov=page_analyzer tests/ --cov-report xml
-
 publish:
 	poetry publish --dry-run
 
