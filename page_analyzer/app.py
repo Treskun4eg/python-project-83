@@ -30,8 +30,7 @@ connect.autocommit = True
 
 @app.route('/')
 def index():
-    messages = get_flashed_messages(with_categories=True)
-    return render_template('index.html', messages=messages)
+    return render_template('index.html')
 
 
 @app.get('/urls')
@@ -55,7 +54,7 @@ def add_url():
     if errors:
         for key, value in errors.items():
             flash(value, key)
-        return redirect(url_for('index'))
+        return render_template('index.html'), 422
 
     with connect as conn:
         url_check = db.get_url_id_by_name(url_name, conn)
