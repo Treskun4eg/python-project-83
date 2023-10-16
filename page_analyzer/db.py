@@ -72,13 +72,17 @@ def created_url_checks(url_id,
                        date_today,
                        connect):
     with connect.cursor(cursor_factory=extras.NamedTupleCursor) as cursor:
-        cursor.execute(
-                """INSERT INTO url_checks (url_id,
-                                            status_code,
-                                            h1,
-                                            title,
-                                            description,
-                                            created_at)
-                   VALUES (%s, %s, %s, %s, %s, %s);""",
-                (url_id, status_code, h1, title, description, date_today)
-            )
+        cursor.execute("""INSERT INTO url_checks (
+                            url_id,
+                            status_code,
+                            h1,
+                            title,
+                            description,
+                            created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s);""",
+                       (url_id,
+                        status_code,
+                        h1,
+                        title,
+                        description,
+                        date_today))
