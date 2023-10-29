@@ -8,19 +8,28 @@ from flask import (
     get_flashed_messages
 )
 
-from page_analyzer.config import Config
-
 from page_analyzer.validator import validation_url
 from page_analyzer import db
 from page_analyzer.html import get_seo
 
 from dotenv import load_dotenv
 from datetime import date
+import os
+import psycopg2
 import requests
 
 
 load_dotenv()
 app = Flask(__name__)
+
+
+class Config(object):
+    TIMEOUT = int(os.getenv('EXTERNAL_REQUEST_TIMEOUT', 30))
+    SECRET_KEY = os.getenv('SECRET_KEY')
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    CONNECT = psycopg2.connect(DATABASE_URL)
+
+
 app.config.from_object(Config)
 
 
