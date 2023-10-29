@@ -2,17 +2,15 @@ from urllib.parse import urlparse
 import validators
 
 
-def extract_domain_and_normalize(data):
-    url = data['url']
+def extract_domain_and_normalize(url):
     parse_url = urlparse(url)
     normalized_url = parse_url.scheme + '://' + parse_url.netloc
     return normalized_url
 
 
-def validation_url(data):
+def validation_url(url):
     errors = {}
-    url = data['url']
-    get_a_domain = extract_domain_and_normalize(data)
+    get_a_domain = extract_domain_and_normalize(url)
     url_valid = validators.url(url)
     if not url_valid and len(get_a_domain) > 255:
         errors["VarcharERROR1"] = "URL превышает 255 символов"
