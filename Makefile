@@ -24,7 +24,7 @@ reinstal:
 .PHONI: install build publish reinstall selfcheck check
 
 dev:
-	poetry run flask --app page_analyzer:app --debug run
+	poetry run flask --app page_analyzer:app run
 
 PORT ?= 8000
 start:
