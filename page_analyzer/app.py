@@ -84,7 +84,8 @@ def check_url(id):
 
         url_info = db.get_url_by_id(id, conn)
         try:
-            request = requests.get(url_info.name, timeout=app.config['TIMEOUT'])
+            request = requests.get(url_info.name,
+                                   timeout=app.config['TIMEOUT'])
             request.raise_for_status()
         except requests.exceptions.RequestException as err:
             flash('Произошла ошибка при проверке', 'Ошибка')
