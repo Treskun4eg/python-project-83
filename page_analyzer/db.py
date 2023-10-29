@@ -19,9 +19,9 @@ def get_last_URL_check(connect):
         return cursor.fetchall()
 
 
-def created_url(url_name, connect):
+def created_url(url, connect):
     date_today = date.today()
-    normalized_url = extract_domain_and_normalize(url_name)
+    normalized_url = extract_domain_and_normalize(url)
     with connect.cursor(cursor_factory=extras.NamedTupleCursor) as cursor:
         cursor.execute(
             """INSERT INTO urls (name, created_at)
@@ -30,8 +30,8 @@ def created_url(url_name, connect):
         )
 
 
-def get_url_id_by_name(url_name, connect):
-    normalized_url = extract_domain_and_normalize(url_name)
+def get_url_id_by_name(url, connect):
+    normalized_url = extract_domain_and_normalize(url)
     with connect.cursor(cursor_factory=extras.NamedTupleCursor) as cursor:
         cursor.execute("""SELECT id FROM urls WHERE name = %s;""",
                        (normalized_url,))
@@ -59,7 +59,9 @@ def get_url_checks_by_url_id(url_id, connect):
                           FROM
                               url_checks
                           WHERE
-                              url_id = %s;""",
+                              url_id = %s
+                          ORDER BY
+                              id DESC;""",
                        (url_id,))
         return cursor.fetchall()
 
